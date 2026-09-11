@@ -252,7 +252,7 @@ function HomeFeed({
         onSelectGenre={onSelectGenre}
       />
 
-      <section className="pt-8">
+      <section>
         <SectionHeading title="Слушали недавно" />
         <div className={`flex gap-4 px-5 ${hideScrollbar}`}>
           {feed.recentlyPlayed.map((track) => (
@@ -266,6 +266,8 @@ function HomeFeed({
           ))}
         </div>
       </section>
+
+      <NoughtiesHipHopCard />
 
       <TasteFeed key={feed.tasteGenre} feed={feed} />
 
@@ -316,6 +318,209 @@ function HomeFeed({
         />
       </div>
     </main>
+  );
+}
+
+function NoughtiesHipHopCard() {
+  return (
+    <section className="mt-10 px-4">
+      <button
+        type="button"
+        className="wiki-fact press relative block h-[176px] w-full overflow-hidden rounded-[24px] text-left"
+        aria-label="Играть Хип-хоп нулевых"
+      >
+        <span aria-hidden className="wiki-fact-bg" />
+        <span aria-hidden className="wiki-fact-glow" />
+        <span className="absolute left-4 top-4 size-[144px] overflow-hidden rounded-[12px]">
+          <Image
+            src="/wiki/noughties-cover.jpg"
+            alt=""
+            fill
+            sizes="144px"
+            className="object-cover"
+          />
+        </span>
+        <span className="absolute left-[172px] right-4 top-[30px] min-h-16">
+          <span className="block font-heading text-[22px] font-bold leading-[24px] text-white">
+            Хип-хоп нулевых
+          </span>
+          <span className="mt-1 block w-[124px] text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60 mix-blend-plus-lighter">
+            95% совпадение · 1ч 25мин
+          </span>
+        </span>
+        <span className="absolute left-[172px] top-[106px] size-10">
+          <img
+            src="/wiki/play-xs.svg"
+            alt=""
+            width={40}
+            height={40}
+            className="size-10"
+          />
+        </span>
+      </button>
+    </section>
+  );
+}
+
+const VIBE_PLAYLISTS = [
+  {
+    id: "vibe-work",
+    tone: "work" as const,
+    title: "Рабочий микс",
+    meta: "95% совпадение · 1 ч 25 мин",
+    tracks: [
+      { title: "SKI", artist: "Young Thug", cover: "/vibe/ski.jpg" },
+      { title: "Janice STFU", artist: "Drake", cover: "/vibe/glove.jpg" },
+    ],
+    more: ["/vibe/glove.jpg", "/vibe/eyes.jpg"] as const,
+  },
+  {
+    id: "vibe-walk",
+    tone: "walk" as const,
+    title: "Для прогулки",
+    meta: "91% совпадения · 1 ч 25 мин",
+    tracks: [
+      { title: "SKI", artist: "Young Thug", cover: "/vibe/eyes.jpg" },
+      { title: "Janice STFU", artist: "Drake", cover: "/vibe/street.jpg" },
+    ],
+    more: ["/vibe/portrait.jpg", "/vibe/vinyl.jpg"] as const,
+  },
+];
+
+function VibeBlock() {
+  return (
+    <section>
+      <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-2">
+        <h2 className="overflow-hidden text-ellipsis whitespace-nowrap font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
+          Какой сейчас вайб?
+        </h2>
+        <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
+          Собрали 2 плейлиста по твоему настроению
+        </p>
+      </div>
+      <div className="mt-3 flex flex-col gap-2 px-4">
+        {VIBE_PLAYLISTS.map((playlist) => (
+          <VibePlaylistCard key={playlist.id} playlist={playlist} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function VibePlaylistCard({
+  playlist,
+}: {
+  playlist: (typeof VIBE_PLAYLISTS)[number];
+}) {
+  const [saved, setSaved] = useState(false);
+
+  return (
+    <div className="vibe-card relative flex flex-col overflow-hidden rounded-[24px] pt-2 pb-4">
+      <span
+        aria-hidden
+        className={`absolute inset-0 rounded-[24px] ${
+          playlist.tone === "work" ? "vibe-card-work" : "vibe-card-walk"
+        }`}
+      />
+      <span aria-hidden className="wiki-fact-glow" />
+
+      <div className="relative grid grid-cols-[1fr_1fr_0.574fr] gap-2 px-2">
+        {playlist.tracks.map((track) => (
+          <span
+            key={track.title}
+            className="relative aspect-square min-w-0 overflow-hidden rounded-[20px]"
+          >
+            <Image
+              src={track.cover}
+              alt=""
+              fill
+              sizes="160px"
+              className="object-cover"
+            />
+            <span className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
+            <span className="absolute inset-x-2 bottom-2 flex flex-col">
+              <span className="truncate text-[11px] font-medium leading-[14px] text-white">
+                {track.title}
+              </span>
+              <span className="truncate text-[10px] font-medium leading-[14px] text-white/60">
+                {track.artist}
+              </span>
+            </span>
+          </span>
+        ))}
+        <VibeMorePeek covers={playlist.more} />
+      </div>
+
+      <div className="relative mt-3 flex h-10 shrink-0 items-center justify-between px-4">
+        <div className="min-w-0 flex-1 pr-3">
+          <p className="truncate font-heading text-[16px] font-bold leading-5 tracking-[-0.02em] text-white">
+            {playlist.title}
+          </p>
+          <p className="truncate text-[11px] font-medium leading-[14px] text-[#858689]">
+            {playlist.meta}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            type="button"
+            className="press flex size-6 items-center justify-center"
+            aria-label={saved ? "Удалить из коллекции" : "Сохранить"}
+            onClick={() => setSaved((value) => !value)}
+          >
+            {saved ? (
+              <Heart size={22} className="fill-white text-white" />
+            ) : (
+              <img
+                src="/vibe/heart.svg"
+                alt=""
+                width={24}
+                height={24}
+                className="size-6"
+              />
+            )}
+          </button>
+          <button
+            type="button"
+            className="press size-10"
+            aria-label={`Играть ${playlist.title}`}
+          >
+            <img
+              src="/wiki/play-xs.svg"
+              alt=""
+              width={40}
+              height={40}
+              className="size-10"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VibeMorePeek({ covers }: { covers: readonly [string, string] }) {
+  return (
+    <span className="relative min-h-0 min-w-0 overflow-hidden rounded-[20px] bg-black">
+      <img
+        alt=""
+        src={covers[1]}
+        className="absolute left-[-21%] top-[-17%] aspect-square w-[138%] rounded-[22px] object-cover blur-md"
+      />
+      <span className="absolute left-[32%] top-[29%] aspect-square w-[52%] rotate-[15deg] overflow-hidden rounded-[10px]">
+        <img alt="" src={covers[0]} className="size-full object-cover" />
+      </span>
+      <span className="absolute left-[12%] top-[7%] aspect-square w-[76%] overflow-hidden rounded-[12px]">
+        <img alt="" src={covers[1]} className="size-full object-cover" />
+      </span>
+      <span className="absolute left-[12%] top-[69%] flex w-[53%] flex-col">
+        <span className="truncate text-[11px] font-medium leading-[14px] text-white">
+          +24
+        </span>
+        <span className="text-[10px] font-medium leading-[14px] text-white/60">
+          Трека
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -398,11 +603,13 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4 px-5">
-      <h2 className="font-heading text-[32px] font-bold leading-none tracking-[-0.03em]">
+      <h2 className="overflow-hidden text-ellipsis whitespace-nowrap font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-1.5 text-[12px] text-white/45">{subtitle}</p>
+        <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
+          {subtitle}
+        </p>
       ) : null}
     </div>
   );
@@ -524,6 +731,8 @@ function TasteFeed({
           </div>
         ) : null}
       </section>
+
+      <VibeBlock />
 
       {feed.popularAlbums.length > 0 ? (
         <section>
@@ -791,7 +1000,7 @@ function Hero({
         <HeroBackdrop />
         <HeroHeader />
 
-        <div className="relative z-10 flex flex-col items-center pb-10">
+        <div className="relative z-10 flex flex-col items-center">
           <div className="flex w-full flex-col">
             <div className="mb-[-16px] flex w-full flex-col items-center justify-end px-4 pt-4">
               <WaveBubble>
@@ -855,13 +1064,11 @@ function Hero({
           </div>
         </div>
 
-        <div className="relative z-10 h-20">
-          <div className="absolute left-1/2 top-[38px] flex -translate-x-1/2 flex-col items-center">
-            <MoreForYouChevron />
-            <span className="text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white">
-              Больше для вас
-            </span>
-          </div>
+        <div className="relative z-10 mt-[78px] mb-[78px] flex flex-col items-center">
+          <MoreForYouChevron />
+          <span className="text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white">
+            Больше для вас
+          </span>
         </div>
       </div>
     </header>
