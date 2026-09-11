@@ -326,12 +326,12 @@ function NoughtiesHipHopCard() {
     <section className="mt-10 px-4">
       <button
         type="button"
-        className="wiki-fact press relative block h-[176px] w-full overflow-hidden rounded-[24px] text-left"
+        className="wiki-fact press relative flex w-full items-stretch gap-3 overflow-hidden rounded-[24px] p-4 text-left"
         aria-label="Играть Хип-хоп нулевых"
       >
         <span aria-hidden className="wiki-fact-bg" />
         <span aria-hidden className="wiki-fact-glow" />
-        <span className="absolute left-4 top-4 size-[144px] overflow-hidden rounded-[12px]">
+        <span className="relative aspect-square w-[min(144px,40%)] shrink-0 overflow-hidden rounded-[12px]">
           <Image
             src="/wiki/noughties-cover.jpg"
             alt=""
@@ -340,22 +340,24 @@ function NoughtiesHipHopCard() {
             className="object-cover"
           />
         </span>
-        <span className="absolute left-[172px] right-4 top-[30px] min-h-16">
-          <span className="block font-heading text-[22px] font-bold leading-[24px] text-white">
-            Хип-хоп нулевых
+        <span className="relative flex min-w-0 flex-1 flex-col justify-between py-1.5">
+          <span className="min-w-0">
+            <span className="block font-heading text-[22px] font-bold leading-[24px] text-white">
+              Хип-хоп нулевых
+            </span>
+            <span className="mt-1 block text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60 mix-blend-plus-lighter">
+              95% совпадение · 1ч 25мин
+            </span>
           </span>
-          <span className="mt-1 block w-[124px] text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60 mix-blend-plus-lighter">
-            95% совпадение · 1ч 25мин
+          <span className="size-10 shrink-0">
+            <img
+              src="/wiki/play-xs.svg"
+              alt=""
+              width={40}
+              height={40}
+              className="size-10"
+            />
           </span>
-        </span>
-        <span className="absolute left-[172px] top-[106px] size-10">
-          <img
-            src="/wiki/play-xs.svg"
-            alt=""
-            width={40}
-            height={40}
-            className="size-10"
-          />
         </span>
       </button>
     </section>
@@ -391,10 +393,10 @@ function VibeBlock() {
   return (
     <section>
       <div className="flex min-h-16 flex-col justify-center gap-1 px-4 py-2">
-        <h2 className="overflow-hidden text-ellipsis whitespace-nowrap font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
+        <h2 className="font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
           Какой сейчас вайб?
         </h2>
-        <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
+        <p className="text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
           Собрали 2 плейлиста по твоему настроению
         </p>
       </div>
@@ -551,7 +553,7 @@ function CatalogPeek({
       <button
         type="button"
         onClick={onOpen}
-        className="press relative mx-auto mt-6 block h-[136px] w-[280px]"
+        className="press relative mx-auto mt-6 block h-[136px] w-[min(280px,100%)]"
         aria-label="Открыть каталог"
       >
         {left ? (
@@ -603,11 +605,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4 px-5">
-      <h2 className="overflow-hidden text-ellipsis whitespace-nowrap font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
+      <h2 className="font-heading text-[24px] font-bold leading-[26px] tracking-[-0.01em] text-white">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
+        <p className="mt-1 text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white/60">
           {subtitle}
         </p>
       ) : null}
@@ -1125,7 +1127,7 @@ function WaveBubble({ children }: { children: ReactNode }) {
   const uid = rawId.replace(/:/g, "");
 
   return (
-    <div className="relative w-[240px] px-4 pb-5 pt-3">
+    <div className="relative w-full max-w-[240px] px-4 pb-5 pt-3">
       <svg
         aria-hidden
         className="pointer-events-none absolute overflow-visible"
