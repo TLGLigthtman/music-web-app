@@ -14,7 +14,6 @@ import {
   Pause,
   Play,
   PartyPopper,
-  Search,
   User,
 } from "lucide-react";
 import {
@@ -789,71 +788,80 @@ function Hero({
   return (
     <header className="relative overflow-x-hidden">
       <div className="relative pt-[max(0px,env(safe-area-inset-top))]">
-        <div className="absolute inset-0 overflow-hidden">
-          <HeroBackdrop />
-        </div>
-
+        <HeroBackdrop />
         <HeroHeader />
 
-        <div className="relative z-10 flex flex-col items-center pb-3 pt-[18px]">
-          <div className="flex w-[240px] flex-col items-center">
-            <WaveBubble>
-              Ваш поток здесь не первый раз — и вряд ли последний
-            </WaveBubble>
+        <div className="relative z-10 flex flex-col items-center pb-10">
+          <div className="flex w-full flex-col">
+            <div className="mb-[-16px] flex w-full flex-col items-center justify-end px-4 pt-4">
+              <WaveBubble>
+                Ваш поток здесь не первый раз — и вряд ли последний
+              </WaveBubble>
+            </div>
+
+            <div className="relative h-[212px] w-full shrink-0">
+              <button
+                type="button"
+                onClick={onTogglePlay}
+                className="press absolute left-1/2 top-[36px] flex h-[100px] w-[100px] -translate-x-1/2 items-center justify-center"
+                aria-label={playing ? "Пауза" : "Слушать поток"}
+              >
+                <span
+                  aria-hidden
+                  className="absolute h-[87.5px] w-[87.5px] rounded-full bg-[#007E3D]"
+                />
+                {playing ? (
+                  <span className="relative flex h-full w-full items-center justify-center rounded-full bg-white text-[#007E3D]">
+                    <PauseGlyph />
+                  </span>
+                ) : (
+                  <span className="relative block h-full w-full">
+                    <PlayGlyph />
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className="wave-settings press absolute left-1/2 top-[156px] flex h-11 min-w-[72px] -translate-x-1/2 items-center justify-center overflow-hidden rounded-full px-5 py-2 text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white"
+              >
+                <span aria-hidden className="wave-settings-bg" />
+                <span aria-hidden className="wave-settings-color" />
+                <span className="relative z-10">Настроить</span>
+              </button>
+            </div>
           </div>
 
-          <div className="mt-5 flex flex-col items-center">
-            <button
-              type="button"
-              onClick={onTogglePlay}
-              className="press relative flex h-[100px] w-[100px] items-center justify-center"
-              aria-label={playing ? "Пауза" : "Слушать поток"}
-            >
-              <span
-                aria-hidden
-                className="absolute h-[87.5px] w-[87.5px] rounded-full bg-black"
+          <div className="h-6 w-full" />
+
+          <div
+            ref={scrollerRef}
+            className={`relative z-10 flex min-h-[160px] min-w-0 w-full snap-x snap-mandatory items-center gap-2.5 px-[calc((100%-160px)/2)] [overflow-anchor:none] ${hideScrollbar}`}
+          >
+            {loopedWaveCards.map(({ card, copy }, index) => (
+              <WaveFlowCard
+                key={`${copy}-${card.id}`}
+                card={card}
+                tilt={
+                  index === centeredIndex ? 0 : index < centeredIndex ? 4 : -4
+                }
+                active={index === centeredIndex}
+                onClick={() => {
+                  onSelectGenre(card.genre);
+                  scrollToIndex(index);
+                }}
               />
-              <span className="relative flex h-full w-full items-center justify-center rounded-full bg-white text-black">
-                {playing ? <PauseGlyph /> : <PlayGlyph />}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="wave-settings press mt-5 flex h-11 w-[112px] items-center justify-center overflow-hidden rounded-full px-5 py-2 text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white"
-            >
-              <span aria-hidden className="wave-settings-bg" />
-              <span aria-hidden className="wave-settings-color" />
-              <span className="relative z-10">Настроить</span>
-            </button>
+            ))}
           </div>
         </div>
 
-        <div
-          ref={scrollerRef}
-          className={`relative z-10 flex min-w-0 w-full snap-x snap-mandatory items-center gap-2.5 px-[calc((100%-160px)/2)] py-2 [overflow-anchor:none] ${hideScrollbar}`}
-        >
-          {loopedWaveCards.map(({ card, copy }, index) => (
-            <WaveFlowCard
-              key={`${copy}-${card.id}`}
-              card={card}
-              tilt={
-                index === centeredIndex ? 0 : index < centeredIndex ? 4 : -4
-              }
-              active={index === centeredIndex}
-              onClick={() => {
-                onSelectGenre(card.genre);
-                scrollToIndex(index);
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="relative z-10 flex h-20 flex-col items-center justify-center">
-          <MoreForYouChevron />
-          <span className="text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white">
-            Больше для вас
-          </span>
+        <div className="relative z-10 h-20">
+          <div className="absolute left-1/2 top-[38px] flex -translate-x-1/2 flex-col items-center">
+            <MoreForYouChevron />
+            <span className="text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white">
+              Больше для вас
+            </span>
+          </div>
         </div>
       </div>
     </header>
@@ -868,114 +876,94 @@ function HeroHeader() {
         className="press flex h-10 w-10 items-center justify-center rounded-full bg-white/12"
         aria-label="Поиск"
       >
-        <Search size={20} strokeWidth={2} className="text-white" />
+        <SearchGlyph />
       </button>
     </div>
   );
 }
 
-function HeroBackdrop() {
-  const blurId = useId();
+function SearchGlyph() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M21.6904 20.4929L19.5991 18.4016L17.7977 16.6002C18.2648 15.988 18.6553 15.3281 18.9462 14.625C19.3877 13.5576 19.6191 12.4026 19.6191 11.2117C19.6191 10.0203 19.3877 8.86522 18.9462 7.79796C18.5046 6.7307 17.853 5.75121 17.0127 4.91088C16.1724 4.07055 15.1927 3.41894 14.1254 2.97741C13.0581 2.53588 11.9031 2.30444 10.7119 2.30444C9.52075 2.30444 8.36572 2.53589 7.2984 2.97741C6.23108 3.41893 5.25146 4.07055 4.41113 4.91088C3.5708 5.75121 2.91919 6.7307 2.47766 7.79796C2.03613 8.86522 1.80469 10.0203 1.80469 11.2117C1.80445 12.4031 2.03577 13.5581 2.47724 14.6254C2.91871 15.6926 3.57032 16.6721 4.41065 17.5124C5.2793 18.3811 6.28394 19.0327 7.35669 19.467C8.42944 19.9014 9.57031 20.1184 10.7114 20.1179C11.8523 20.1179 12.9933 19.9009 14.0662 19.4667C14.7828 19.1767 15.4645 18.7808 16.1 18.297L17.9019 20.0989L19.9931 22.1901C20.0908 22.2878 20.2187 22.3366 20.3467 22.3366C20.4747 22.3366 20.6026 22.2878 20.7003 22.1901L21.1953 21.6951L21.6904 21.2C21.788 21.1023 21.8369 20.9743 21.8369 20.8464C21.8369 20.7184 21.788 20.5905 21.6904 20.4929ZM10.712 18.1195C8.94225 18.1194 7.17236 17.4456 5.8247 16.0984C5.17333 15.447 4.66833 14.6875 4.32616 13.8597C3.98399 13.032 3.80468 12.136 3.80468 11.2117C3.80468 10.2873 3.98412 9.39135 4.32641 8.56359C4.6687 7.73583 5.17382 6.97631 5.82519 6.32494C6.4768 5.67357 7.23644 5.16845 8.0642 4.82616C8.89196 4.48387 9.78783 4.30443 10.7119 4.30443C11.636 4.30443 12.5319 4.48387 13.3596 4.82616C14.1874 5.16845 14.947 5.67357 15.5986 6.32494C16.25 6.97631 16.7551 7.73583 17.0974 8.56359C17.4397 9.39135 17.6191 10.2873 17.6191 11.2117C17.6191 12.1355 17.4397 13.0315 17.0974 13.8594C16.7551 14.6873 16.25 15.447 15.5986 16.0984C14.2515 17.446 12.4818 18.1196 10.712 18.1195Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
+function HeroBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[#01582a]">
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 360 800"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden
+      <div
+        className="absolute inset-x-0 h-[800px] w-full"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) - 50px)" }}
       >
-        <defs>
-          <filter
-            id={blurId}
-            x="-50%"
-            y="-40%"
-            width="200%"
-            height="180%"
-          >
-            <feGaussianBlur stdDeviation="16" />
-          </filter>
-        </defs>
-        <g filter={`url(#${blurId})`}>
-          <path
-            fill="#00a24e"
-            d="M92 0C132-38 178-12 208 38C240-10 298 18 372 78L372 455C312 508 228 488 172 422C118 362 102 328 118 278C132 232 48 214 64 152C78 104 48 42 92 0Z"
-          />
-          <path
-            fill="#007e3d"
-            d="M210 40C268 8 338 48 390 118C410 210 392 320 360 410C310 470 230 455 175 390C125 330 210 250 210 40Z"
-          />
-        </g>
-      </svg>
-      <div className="absolute -left-[45%] -top-[11%] h-[271px] w-[190%] bg-black/18 blur-[120px]" />
-      <div className="absolute inset-x-0 bottom-0 h-[46%] bg-gradient-to-b from-transparent via-[#01582a]/50 to-[#01582a]" />
-      <div className="absolute -left-[30%] bottom-[-6%] h-[200px] w-[162%] bg-black/75 blur-[80px]" />
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#04060a]" />
+        <img
+          src="/hero/wave-bg.png"
+          alt=""
+          className="absolute inset-0 h-full w-full"
+        />
+      </div>
     </div>
   );
 }
+
+const WAVE_BUBBLE_PATH =
+  "M210 0C219.319 0 223.978 0.000167183 227.653 1.52246C232.554 3.55234 236.448 7.44612 238.478 12.3467C240 16.0221 240 20.6814 240 30C240 39.3186 240 43.9779 238.478 47.6533C236.448 52.5539 232.554 56.4477 227.653 58.4775C223.978 59.9998 219.319 60 210 60H134.012C129.973 60 127.953 60 126.244 60.8687C126.01 60.9877 125.782 61.1181 125.561 61.2595C123.946 62.2919 122.922 64.0328 120.874 67.5146C120.493 68.1619 119.507 68.1619 119.126 67.5146C117.078 64.0328 116.054 62.2919 114.439 61.2595C114.218 61.1181 113.99 60.9877 113.756 60.8687C112.047 60 110.027 60 105.988 60H30C20.6814 60 16.0221 59.9998 12.3467 58.4775C7.44612 56.4477 3.55234 52.5539 1.52246 47.6533C0.000167183 43.9779 0 39.3186 0 30C0 20.6814 0.000167183 16.0221 1.52246 12.3467C3.55234 7.44612 7.44612 3.55234 12.3467 1.52246C16.0221 0.000167183 20.6814 0 30 0L210 0Z";
 
 function WaveBubble({ children }: { children: ReactNode }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, "");
 
   return (
-    <div className="relative w-full overflow-hidden px-4 pb-6 pt-3">
+    <div className="relative w-[240px] px-4 pb-5 pt-3">
       <svg
         aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        viewBox="0 0 240 72"
+        className="pointer-events-none absolute overflow-visible"
+        style={{
+          inset: "-24px",
+          width: "calc(100% + 48px)",
+          height: "calc(100% + 48px)",
+        }}
+        viewBox="-24 -24 288 116"
         preserveAspectRatio="none"
       >
         <defs>
+          <clipPath id={`${uid}-clip`}>
+            <path d={WAVE_BUBBLE_PATH} />
+          </clipPath>
           <filter
-            id={`${uid}-inner`}
-            x="0%"
-            y="0%"
-            width="100%"
-            height="100%"
+            id={`${uid}-glow`}
+            filterUnits="userSpaceOnUse"
+            x="-40"
+            y="-40"
+            width="320"
+            height="148"
             colorInterpolationFilters="sRGB"
           >
-            <feFlood floodColor="#ffffff" floodOpacity="0.55" result="whiteWide" />
-            <feComposite
-              in="whiteWide"
-              in2="SourceAlpha"
-              operator="out"
-              result="outerWide"
-            />
-            <feGaussianBlur in="outerWide" stdDeviation="10" result="blurWide" />
-            <feComposite
-              in="blurWide"
-              in2="SourceAlpha"
-              operator="in"
-              result="innerWide"
-            />
-            <feFlood floodColor="#ffffff" floodOpacity="0.7" result="whiteTight" />
-            <feComposite
-              in="whiteTight"
-              in2="SourceAlpha"
-              operator="out"
-              result="outerTight"
-            />
-            <feGaussianBlur in="outerTight" stdDeviation="2" result="blurTight" />
-            <feComposite
-              in="blurTight"
-              in2="SourceAlpha"
-              operator="in"
-              result="innerTight"
-            />
-            <feMerge>
-              <feMergeNode in="SourceGraphic" />
-              <feMergeNode in="innerWide" />
-              <feMergeNode in="innerTight" />
-            </feMerge>
+            <feGaussianBlur stdDeviation="3.4" />
           </filter>
         </defs>
-        <path
-          className="wave-bubble-shape"
-          filter={`url(#${uid}-inner)`}
-          d="M20 0H220A20 20 0 0 1 240 20V40A20 20 0 0 1 220 60H131C126 60 123 67 120 72C117 67 114 60 109 60H20A20 20 0 0 1 0 40V20A20 20 0 0 1 20 0Z"
-        />
+        <path className="wave-bubble-shape" d={WAVE_BUBBLE_PATH} />
+        <g clipPath={`url(#${uid}-clip)`}>
+          <path
+            d={WAVE_BUBBLE_PATH}
+            fill="none"
+            stroke="#92ff59"
+            strokeWidth="16"
+            strokeOpacity="0.42"
+            filter={`url(#${uid}-glow)`}
+          />
+          <path
+            d={WAVE_BUBBLE_PATH}
+            fill="none"
+            stroke="#92ff59"
+            strokeWidth="5"
+            strokeOpacity="0.5"
+          />
+        </g>
       </svg>
       <p className="relative z-10 text-center text-[14px] font-medium leading-[18px] tracking-[-0.02em] text-white">
         {children}
@@ -987,15 +975,17 @@ function WaveBubble({ children }: { children: ReactNode }) {
 function PlayGlyph() {
   return (
     <svg
-      width="42"
-      height="42"
-      viewBox="0 0 42 42"
-      className="ml-1"
+      width="100"
+      height="100"
+      viewBox="0 0 100 100"
+      className="h-full w-full"
       aria-hidden
     >
       <path
-        d="M12.5 8.2c0-1.3 1.4-2.1 2.5-1.5l18.2 10.8c1.1.6 1.1 2.3 0 3L15 31.3c-1.1.7-2.5-.1-2.5-1.5V8.2Z"
-        fill="currentColor"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M50 0C77.6142 0 100 22.3858 100 50C100 77.6142 77.6142 100 50 100C22.3858 100 0 77.6142 0 50C7.36297e-06 22.3858 22.3858 0 50 0ZM41.8649 31.5029C39.6094 30.6397 37.1235 32.0767 36.8181 34.4186L36.7397 35.0133C35.4423 44.9644 35.4423 55.0356 36.7397 64.9867L36.8181 65.5814C37.1235 67.9233 39.6094 69.3603 41.8649 68.4971L42.2904 68.335C52.2318 64.5306 61.5203 59.2727 69.8364 52.7431C71.6318 51.3334 71.6317 48.6685 69.8364 47.2586C61.5203 40.729 52.2318 35.4712 42.2904 31.6668L41.8649 31.5029Z"
+        fill="white"
       />
     </svg>
   );
@@ -1014,11 +1004,8 @@ function MoreForYouChevron() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
       <path
-        d="M2.25 12.14 10 5.55l7.75 6.59"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M16.4513 13.7437L13.2256 10.518L9.99994 7.29235L6.77425 10.518L3.54856 13.7437C3.4672 13.8251 3.36057 13.8658 3.25394 13.8658C3.1473 13.8658 3.04067 13.8251 2.95931 13.7437L2.66474 13.4492L2.37016 13.1546C2.2888 13.0732 2.24813 12.9666 2.24813 12.86C2.24813 12.7533 2.2888 12.6467 2.37016 12.5654L5.89042 9.0451L9.41068 5.52484C9.57339 5.36212 9.78666 5.28076 9.99994 5.28076C10.2132 5.28076 10.4265 5.36212 10.5892 5.52484L14.1095 9.0451L17.6297 12.5654C17.7111 12.6467 17.7517 12.7533 17.7517 12.86C17.7517 12.9666 17.7111 13.0732 17.6297 13.1546L17.3351 13.4492L17.0406 13.7437C16.9592 13.8251 16.8526 13.8658 16.7459 13.8658C16.6393 13.8658 16.5327 13.8251 16.4513 13.7437Z"
+        fill="currentColor"
       />
     </svg>
   );
@@ -1026,8 +1013,8 @@ function MoreForYouChevron() {
 
 function WaveMark() {
   return (
-    <Image
-      src="/stream-mark.png"
+    <img
+      src="/hero/stream-mark.svg"
       alt=""
       width={56}
       height={56}
@@ -1047,7 +1034,7 @@ function WaveFlowCard({
   onClick: () => void;
   tilt?: number;
 }) {
-  const twoLine = card.title.includes("\n");
+  const size = active ? 160 : 140;
 
   return (
     <button
@@ -1055,17 +1042,16 @@ function WaveFlowCard({
       onClick={onClick}
       data-wave-card=""
       data-featured={card.featured ? "true" : undefined}
-      className={`relative flex shrink-0 snap-center items-center justify-center ${
-        active ? "z-10 h-40 w-40" : "h-[140px] w-[140px]"
-      }`}
+      className="relative flex shrink-0 snap-center items-center justify-center"
+      style={{ width: size, height: size, zIndex: active ? 10 : 1 }}
     >
       <span
         style={{
+          width: size,
+          height: size,
           transform: active ? "rotate(0deg)" : `rotate(${tilt}deg)`,
         }}
-        className={`relative flex flex-col items-center overflow-hidden rounded-[28px] transition-[width,height,transform] duration-300 ease-out ${
-          twoLine ? "justify-center gap-1 px-3" : "gap-[22px] px-4 pt-[30px]"
-        } ${active ? "h-40 w-40" : "h-[140px] w-[140px]"}`}
+        className="relative block overflow-hidden rounded-[28px] transition-[width,height,transform] duration-300 ease-out"
       >
         <span
           aria-hidden
@@ -1073,7 +1059,16 @@ function WaveFlowCard({
             active ? "wave-plaque-active" : "wave-plaque"
           }`}
         />
-        <span className="relative z-10 flex shrink-0 items-center justify-center">
+        <img
+          aria-hidden
+          alt=""
+          src={active ? "/hero/tooth-glow-160.svg?v=3" : "/hero/tooth-glow-140.svg?v=3"}
+          className="pointer-events-none absolute inset-0 h-full w-full"
+        />
+        <span
+          className="absolute left-1/2 z-10 block h-14 w-14 -translate-x-1/2 overflow-hidden"
+          style={{ top: active ? 30 : 20 }}
+        >
           {card.featured ? (
             <WaveMark />
           ) : card.media === "avatar" ? (
@@ -1103,11 +1098,15 @@ function WaveFlowCard({
           )}
         </span>
         <span
-          className={`relative z-10 block whitespace-pre-line text-center font-heading font-bold tracking-[-0.01em] ${
+          className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center justify-center whitespace-pre-line text-center font-heading font-bold ${
             active
-              ? "text-[20px] leading-[22px] text-white"
-              : "text-[17.5px] leading-5 text-white/32 mix-blend-plus-lighter"
+              ? "w-[128px] text-[20px] leading-[22px] tracking-[-0.2px] text-white"
+              : "w-[112px] text-[17.5px] leading-5 tracking-[-0.175px] text-white/32 mix-blend-plus-lighter"
           }`}
+          style={{
+            top: active ? "67.5%" : "68.57%",
+            bottom: active ? "18.75%" : "17.14%",
+          }}
         >
           {card.title}
         </span>
