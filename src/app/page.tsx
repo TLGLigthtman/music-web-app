@@ -160,7 +160,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setPlaying((value) => !value)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d8ff4a] text-black shadow-[0_0_16px_rgba(216,255,74,0.45)] press"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black press"
                 aria-label={playing ? "Пауза" : "Играть"}
               >
                 {playing ? (
@@ -172,7 +172,7 @@ export default function Home() {
             </div>
             <div className="mt-2 px-2">
               <div className="relative h-1 overflow-hidden rounded-full bg-white/10">
-                <div className="spectrum absolute inset-y-0 left-0 w-[62%]" />
+                <div className="absolute inset-y-0 left-0 w-[62%] bg-white" />
                 <div className="absolute top-1/2 left-[62%] h-2 w-1 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_white]" />
               </div>
             </div>
@@ -182,11 +182,11 @@ export default function Home() {
         <div
           aria-hidden
           className={`transition-[height,margin] duration-300 ease-out ${
-            tabBarVisible ? "mt-2 h-14" : "mt-0 h-0"
+            tabBarVisible ? "mt-1 h-14" : "mt-0 h-0"
           }`}
         />
         <nav
-          className={`chrome-glass absolute inset-x-3 flex h-14 items-center justify-around rounded-full px-2 backdrop-blur-[32px] backdrop-saturate-150 transition-[bottom] duration-300 ease-out ${
+          className={`chrome-glass absolute inset-x-3 flex h-14 items-center rounded-full p-0.5 backdrop-blur-[32px] backdrop-saturate-150 transition-[bottom] duration-300 ease-out ${
             tabBarVisible
               ? "bottom-[max(12px,env(safe-area-inset-bottom))]"
               : "pointer-events-none bottom-[calc(-64px-max(12px,env(safe-area-inset-bottom)))]"
@@ -205,21 +205,13 @@ export default function Home() {
                   setTabBarVisible(true);
                 }}
                 tabIndex={tabBarVisible ? 0 : -1}
-                className={`flex min-w-20 flex-col items-center gap-0.5 rounded-full py-1.5 press ${
-                  isActive ? "text-white" : "text-white/40"
+                className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full ${
+                  isActive
+                    ? "bg-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
+                    : "text-white/50"
                 }`}
               >
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full ${
-                    isActive ? "bg-[#c6ff3d] text-black glow-lime" : ""
-                  }`}
-                >
-                  <Icon
-                    size={16}
-                    strokeWidth={isActive ? 2.4 : 1.7}
-                    fill={isActive ? "currentColor" : "none"}
-                  />
-                </span>
+                <Icon size={18} strokeWidth={2} fill="currentColor" />
                 <span className="text-[10px] font-medium tracking-wide">
                   {tab.label}
                 </span>
