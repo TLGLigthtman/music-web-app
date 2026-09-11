@@ -45,10 +45,10 @@ export type Stream = {
 export type WaveCard = {
   id: string;
   title: string;
-  subtitle?: string;
-  avatars: string[];
   featured?: boolean;
   genre?: Genre;
+  media?: "cover" | "avatar";
+  image?: string;
 };
 
 export type Collection = {
@@ -81,6 +81,14 @@ export type TopArtist = {
   genre: Genre;
 };
 
+export type PlaylistShelf = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  layout: "expanded" | "grid" | "banner" | "chart" | "rail";
+  playlists: Playlist[];
+};
+
 export type PersonalizedFeed = {
   recentlyPlayed: Track[];
   featured: FeaturedRelease;
@@ -92,6 +100,7 @@ export type PersonalizedFeed = {
   playlistTracks: Track[];
   tasteGenre: Genre;
   playlists: Playlist[];
+  playlistShelves: PlaylistShelf[];
   moods: Mood[];
   topArtists: TopArtist[];
 };
@@ -596,51 +605,34 @@ export const albums: Album[] = [
 export const waveCards: WaveCard[] = [
   {
     id: "foreign-hiphop",
-    title: "Зарубежный хип-хоп",
-    subtitle: "Сейчас в тренде",
-    avatars: [
-      wikiThumb(
-        "1/18",
-        "KendrickSZASPurs230725-144_(cropped)_desaturated.jpg",
-      ),
-      wikiThumb(
-        "1/15",
-        "Drake_at_The_Carter_Effect_2017_(36818935200)_(cropped).jpg",
-      ),
-      wikiThumb("1/14", "Travis_Scott_-_Openair_Frauenfeld_2019_08.jpg"),
-    ],
+    title: "Зарубежный\nхип-хоп",
+    media: "cover",
+    image: itunesCover(
+      "Music112/v4/ab/16/ef/ab16efe9-e7f1-66ec-021c-5592a23f0f9e/17UMGIM88793.rgb.jpg",
+      400,
+    ),
     genre: "Хип-хоп",
   },
   {
     id: "my-flow",
     title: "Мой поток",
-    avatars: [],
     featured: true,
   },
   {
     id: "drake-mix",
-    title: "Популярно Drake",
-    subtitle: "Хиты и новинки",
-    avatars: [
-      wikiThumb(
-        "1/15",
-        "Drake_at_The_Carter_Effect_2017_(36818935200)_(cropped).jpg",
-      ),
-      itunesCover(
-        "Music115/v4/bb/6d/8f/bb6d8f67-6d04-10b5-dd62-eb5809ac54fc/00602567879152.rgb.jpg",
-        200,
-      ),
-    ],
+    title: "Популярно\nDrake",
+    media: "avatar",
+    image: itunesCover(
+      "Music115/v4/bb/6d/8f/bb6d8f67-6d04-10b5-dd62-eb5809ac54fc/00602567879152.rgb.jpg",
+      400,
+    ),
     genre: "Хип-хоп",
   },
   {
     id: "phonk-night",
     title: "Фонк ночью",
-    subtitle: "Для ночных поездок",
-    avatars: [
-      unsplash("photo-1508700115892-45ecd05ae2ad", 120),
-      unsplash("photo-1571330735066-03aaa9429d89", 120),
-    ],
+    media: "cover",
+    image: unsplash("photo-1508700115892-45ecd05ae2ad", 400),
     genre: "Фонк",
   },
 ];
@@ -750,6 +742,86 @@ export const playlists: Playlist[] = [
     mood: "вечеринка",
     editorial: true,
     trackIds: ["t18", "t22", "t30", "t28", "t21", "t17"],
+  },
+  {
+    id: "pl-hh-night",
+    title: "Город не спит",
+    description: "Хип-хоп после полуночи",
+    cover: unsplash("photo-1470229722913-7c0e2dbbafd3"),
+    genre: "Хип-хоп",
+    mood: "вечеринка",
+    editorial: true,
+    trackIds: ["t17", "t21", "t29", "t23", "t33", "t18"],
+  },
+  {
+    id: "pl-hh-mic",
+    title: "Микрофон",
+    description: "Чистый флоу и панчи",
+    cover: unsplash("photo-1511379938547-c1f69419868d"),
+    genre: "Хип-хоп",
+    mood: "работа",
+    editorial: true,
+    trackIds: ["t16", "t19", "t24", "t26", "t31", "t34"],
+  },
+  {
+    id: "pl-hh-west",
+    title: "Westside",
+    description: "Побережье и 808",
+    cover: unsplash("photo-1429962714451-bb934ecdc4ec"),
+    genre: "Хип-хоп",
+    mood: "тренировка",
+    editorial: true,
+    trackIds: ["t32", "t29", "t33", "t17", "t18", "t20"],
+  },
+  {
+    id: "pl-hh-rain",
+    title: "Дождь на асфальте",
+    description: "Медленный хип-хоп",
+    cover: unsplash("photo-1471478331149-c72f17e33c73"),
+    genre: "Хип-хоп",
+    mood: "грусть",
+    editorial: true,
+    trackIds: ["t25", "t27", "t35", "t26", "t19", "t23"],
+  },
+  {
+    id: "pl-hh-court",
+    title: "Площадка",
+    description: "Баскет и басы",
+    cover: unsplash("photo-1514525253161-7a46d19cd819"),
+    genre: "Хип-хоп",
+    mood: "тренировка",
+    editorial: true,
+    trackIds: ["t24", "t28", "t31", "t16", "t21", "t33"],
+  },
+  {
+    id: "pl-hh-vinyl",
+    title: "Кирпичи",
+    description: "Классика без спешки",
+    cover: unsplash("photo-1485579149621-3123dd979885"),
+    genre: "Хип-хоп",
+    mood: "работа",
+    editorial: true,
+    trackIds: ["t31", "t32", "t19", "t16", "t26", "t25"],
+  },
+  {
+    id: "pl-hh-lights",
+    title: "Неон",
+    description: "Клубный хип-хоп",
+    cover: unsplash("photo-1507838153414-b4b713384a76"),
+    genre: "Хип-хоп",
+    mood: "вечеринка",
+    editorial: true,
+    trackIds: ["t22", "t30", "t28", "t21", "t18", "t17"],
+  },
+  {
+    id: "pl-hh-drive",
+    title: "Ночная трасса",
+    description: "В наушниках за рулём",
+    cover: unsplash("photo-1614149162883-504ce4d13909"),
+    genre: "Хип-хоп",
+    mood: "грусть",
+    editorial: true,
+    trackIds: ["t29", "t23", "t27", "t35", "t34", "t20"],
   },
   {
     id: "pl-ph-gym",
@@ -1050,6 +1122,51 @@ export function getPersonalizedFeed(activeGenre?: string): PersonalizedFeed {
     playlistTracks: pool.slice(0, 5),
     tasteGenre,
     playlists: tastePlaylists,
+    playlistShelves: [
+      {
+        id: "shelf-gym",
+        title: "Плейлист для тренировки",
+        subtitle: "Один сет — сразу в работу",
+        layout: "expanded",
+        playlists: playlists
+          .filter((playlist) => playlist.mood === "тренировка")
+          .slice(0, 1),
+      },
+      {
+        id: "shelf-work",
+        title: "Фон для работы",
+        subtitle: "Четыре спокойные подборки",
+        layout: "grid",
+        playlists: playlists
+          .filter((playlist) => playlist.mood === "работа")
+          .slice(0, 4),
+      },
+      {
+        id: "shelf-sad",
+        title: "Тихий вечер",
+        subtitle: "Выбор редакции",
+        layout: "banner",
+        playlists: playlists
+          .filter((playlist) => playlist.mood === "грусть")
+          .slice(0, 1),
+      },
+      {
+        id: "shelf-party",
+        title: "Чарт вечеринки",
+        subtitle: "Что включают сейчас",
+        layout: "chart",
+        playlists: playlists
+          .filter((playlist) => playlist.mood === "вечеринка")
+          .slice(0, 1),
+      },
+      {
+        id: "shelf-editorial",
+        title: "Ещё от редакции",
+        subtitle: "Короткий ряд, если остались силы",
+        layout: "rail",
+        playlists: playlists.filter((playlist) => playlist.editorial).slice(0, 5),
+      },
+    ],
     moods,
     topArtists: topArtists.filter((artist) => artist.genre === tasteGenre),
   };

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import {
-  AudioLines,
+  ArrowUp,
   Briefcase,
   ChevronUp,
   CloudRain,
@@ -15,10 +15,8 @@ import {
   Pause,
   Play,
   PartyPopper,
-  Search,
   SkipBack,
   SkipForward,
-  Smartphone,
   User,
 } from "lucide-react";
 import {
@@ -34,12 +32,15 @@ import {
   type WaveCard,
   type Album,
   type FeaturedRelease,
+  type PlaylistShelf,
 } from "@/data/mockData";
 
 type TabId = "home" | "collection" | "profile";
 
 const hideScrollbar =
   "no-scrollbar overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
+
+const WAVE_LOOP_COPIES = 5;
 
 const tabs: { id: TabId; label: string; icon: typeof House }[] = [
   { id: "home", label: "Главная", icon: House },
@@ -78,13 +79,21 @@ export default function Home() {
   );
   const nowPlaying = feed.recentlyPlayed[0];
 
+  const openCatalog = () => {
+    setActiveTab("collection");
+    setTabBarVisible(true);
+    window.scrollTo(0, 0);
+  };
+
   useEffect(() => {
     lastScrollY.current = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
       const delta = y - lastScrollY.current;
       lastScrollY.current = y;
-      if (y < 16) {
+      const fromBottom =
+        document.documentElement.scrollHeight - window.innerHeight - y;
+      if (y < 16 || fromBottom < 64) {
         setTabBarVisible(true);
         return;
       }
@@ -97,8 +106,8 @@ export default function Home() {
 
   return (
     <div className="relative mx-auto min-h-screen max-w-md bg-[#04060a] pb-40 text-white select-none [-webkit-tap-highlight-color:transparent]">
-      <div className="relative overflow-x-hidden">
-        <div className="pointer-events-none absolute inset-0">
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -left-24 -top-10 h-64 w-64 rounded-full bg-[#ff4fa3]/18 blur-[90px]" />
           <div className="absolute right-[-80px] top-24 h-72 w-72 rounded-full bg-[#c6ff3d]/16 blur-[100px]" />
           <div className="absolute bottom-40 left-1/2 h-52 w-52 -translate-x-1/2 rounded-full bg-[#3b82f6]/12 blur-[80px]" />
@@ -110,6 +119,7 @@ export default function Home() {
             feed={feed}
             activeGenre={activeGenre}
             onSelectGenre={setActiveGenre}
+            onOpenCatalog={openCatalog}
           />
         ) : (
           <PlaceholderScreen
@@ -127,9 +137,8 @@ export default function Home() {
       <div className="fixed inset-x-0 bottom-0 z-20 mx-auto flex w-full max-w-md flex-col px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-6">
         {nowPlaying ? (
           <div className="chrome-glass press relative overflow-hidden rounded-[28px] px-3 py-2 backdrop-blur-[32px] backdrop-saturate-150">
-            <div className="absolute inset-x-5 top-0 h-px bg-white/25" />
             <div className="flex w-full items-center gap-3">
-              <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl shadow-[0_0_16px_rgba(198,255,61,0.25)]">
+              <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl">
                 <Image
                   src={nowPlaying.cover}
                   alt=""
@@ -228,14 +237,16 @@ function HomeFeed({
   feed,
   activeGenre,
   onSelectGenre,
+  onOpenCatalog,
 }: {
   feed: ReturnType<typeof getPersonalizedFeed>;
   activeGenre?: Genre;
   onSelectGenre: (genre?: Genre) => void;
+  onOpenCatalog: () => void;
 }) {
   return (
     <main className="relative flex flex-col">
-      <Hero activeGenre={activeGenre} onSelectGenre={onSelectGenre} />
+      <Hero onSelectGenre={onSelectGenre} />
 
       <section className="pt-8">
         <SectionHeading title="Слушали недавно" />
@@ -255,20 +266,6 @@ function HomeFeed({
       <TasteFeed key={feed.tasteGenre} feed={feed} />
 
       <div className="mt-10 flex flex-col gap-10">
-        <section className="px-5">
-          <button
-            type="button"
-            className="press flex w-full items-center gap-3 overflow-hidden rounded-[24px] bg-gradient-to-r from-[#ff4fa3] via-[#c026d3] to-[#7c3aed] px-4 py-4 text-left shadow-[0_12px_40px_rgba(192,38,211,0.28)]"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
-              <Smartphone size={20} />
-            </span>
-            <span className="text-sm font-medium leading-snug">
-              Подключите музыку на других устройствах
-            </span>
-          </button>
-        </section>
-
         <section>
           <SectionHeading
             title="Новинки"
@@ -290,27 +287,101 @@ function HomeFeed({
           ))}
         </CarouselSection>
 
-        <CarouselSection title="Назад во времени">
-          {feed.decades.map((item) => (
-            <SquareCard
-              key={item.id}
-              title={item.title}
-              subtitle={item.subtitle}
-              cover={item.cover}
-            />
-          ))}
-        </CarouselSection>
+        <section>
+          <SectionHeading title="Назад во времени" />
+          <div className="grid grid-cols-2 gap-4 px-5">
+            {feed.decades.map((item) => (
+              <SquareCard
+                key={item.id}
+                title={item.title}
+                subtitle={item.subtitle}
+                cover={item.cover}
+                fill
+              />
+            ))}
+          </div>
+        </section>
 
-        <div className="px-5 pb-6">
-          <button
-            type="button"
-            className="press w-full rounded-full bg-white py-4 text-sm font-semibold text-black shadow-[0_0_24px_rgba(255,255,255,0.18)]"
-          >
-            Перейти в каталог
-          </button>
-        </div>
+        {feed.playlistShelves.map((shelf) => (
+          <PlaylistShelfBlock key={shelf.id} shelf={shelf} />
+        ))}
+
+        <CatalogPeek
+          covers={feed.popularAlbums.slice(0, 3).map((album) => album.cover)}
+          onOpen={onOpenCatalog}
+        />
       </div>
     </main>
+  );
+}
+
+function CatalogPeek({
+  covers,
+  onOpen,
+}: {
+  covers: string[];
+  onOpen: () => void;
+}) {
+  const left = covers[0];
+  const center = covers[1] ?? covers[0];
+  const right = covers[2] ?? covers[0];
+
+  return (
+    <section className="relative -mb-20 pt-2">
+      <div className="flex w-full flex-col items-center">
+        <ArrowUp
+          size={28}
+          strokeWidth={2}
+          className="catalog-peek-arrow text-white"
+        />
+        <span className="mt-2 text-[20px] font-medium tracking-[-0.02em]">
+          Каталог
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="press relative mx-auto mt-6 block h-[136px] w-[280px]"
+        aria-label="Открыть каталог"
+      >
+        {left ? (
+          <span className="absolute left-0 top-6 z-0 h-[104px] w-[104px] -rotate-[18deg] overflow-hidden rounded-[22px] bg-[#1a1a1c] shadow-[0_20px_40px_rgba(0,0,0,0.7)] ring-1 ring-white/10">
+            <Image
+              src={left}
+              alt=""
+              fill
+              sizes="104px"
+              className="object-cover"
+            />
+          </span>
+        ) : null}
+        {right ? (
+          <span className="absolute right-0 top-6 z-0 h-[104px] w-[104px] rotate-[18deg] overflow-hidden rounded-[22px] bg-[#1a1a1c] shadow-[0_20px_40px_rgba(0,0,0,0.7)] ring-1 ring-white/10">
+            <Image
+              src={right}
+              alt=""
+              fill
+              sizes="104px"
+              className="object-cover"
+            />
+          </span>
+        ) : null}
+        {center ? (
+          <span className="absolute left-1/2 top-0 z-10 h-[116px] w-[116px] -translate-x-1/2 rotate-[6deg] overflow-hidden rounded-[24px] bg-[#1a1a1c] shadow-[0_24px_48px_rgba(0,0,0,0.75)] ring-1 ring-white/12">
+            <Image
+              src={center}
+              alt=""
+              fill
+              sizes="116px"
+              className="object-cover"
+            />
+          </span>
+        ) : null}
+        <span className="pointer-events-none absolute inset-x-[-64px] -bottom-16 top-12 bg-gradient-to-t from-[#04060a] from-[5%] via-[#04060a]/80 via-[45%] to-transparent" />
+        <span className="pointer-events-none absolute inset-x-[-96px] -bottom-16 h-20 bg-gradient-to-t from-[#04060a] to-transparent" />
+      </button>
+    </section>
   );
 }
 
@@ -367,12 +438,12 @@ function TasteFeed({
           title={`${feed.tasteGenre} для вас`}
           subtitle="Подборки от редакции — не альбомы артистов"
         />
-        <div className={`flex gap-4 px-5 ${hideScrollbar}`}>
-          {visiblePlaylists.map((playlist) => (
+        <div className="grid grid-cols-2 gap-4 px-5">
+          {feed.playlists.slice(0, 4).map((playlist) => (
             <PlaylistCard
               key={playlist.id}
               playlist={playlist}
-              active={playlist.id === selectedPlaylist?.id}
+              fill
               onSelect={() => selectPlaylist(playlist)}
             />
           ))}
@@ -435,16 +506,17 @@ function TasteFeed({
                 </p>
               </div>
             </div>
-            <div className="relative glass-soft overflow-hidden rounded-[24px] px-2">
-              <div className="max-h-[204px] overflow-y-auto no-scrollbar">
-                {expandedTracks.map((track, index) => (
-                  <TrackRow key={`${track.id}-${index}`} track={track} />
-                ))}
-              </div>
-              {expandedTracks.length > 3 ? (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#0a0c10] to-transparent" />
-              ) : null}
+            <div className="relative overflow-hidden rounded-[24px] bg-white/6 px-2">
+              {expandedTracks.slice(0, 3).map((track, index) => (
+                <TrackRow key={`${track.id}-${index}`} track={track} />
+              ))}
             </div>
+            <button
+              type="button"
+              className="press mt-3 w-full rounded-full border border-white/15 py-3 text-[14px] font-medium"
+            >
+              Слушать всё
+            </button>
           </div>
         ) : null}
       </section>
@@ -480,20 +552,18 @@ function TasteFeed({
 
 function PlaylistCard({
   playlist,
-  active,
   onSelect,
+  fill = false,
 }: {
   playlist: Playlist;
-  active: boolean;
-  onSelect: () => void;
+  onSelect?: () => void;
+  fill?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`press w-[156px] shrink-0 snap-start text-left ${
-        active ? "opacity-100" : "opacity-80"
-      }`}
+      className={`press snap-start text-left ${fill ? "w-full" : "w-[156px] shrink-0"}`}
     >
       <span
         className="relative mb-2 block aspect-square w-full overflow-hidden rounded-[24px] bg-black"
@@ -502,7 +572,7 @@ function PlaylistCard({
           src={playlist.cover}
           alt=""
           fill
-          sizes="156px"
+          sizes={fill ? "50vw" : "156px"}
           className="object-cover"
         />
         <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -553,7 +623,7 @@ function TopArtistCard({
       className="press flex w-[108px] shrink-0 flex-col items-center"
     >
       <span className="relative h-20 w-20">
-        <span className="relative block h-full w-full overflow-hidden rounded-full bg-black shadow-[0_0_24px_rgba(198,255,61,0.16)]">
+        <span className="relative block h-full w-full overflow-hidden rounded-full bg-black">
           <Image
             src={artist.avatar}
             alt=""
@@ -562,7 +632,7 @@ function TopArtistCard({
             className="object-cover"
           />
         </span>
-        <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#c6ff3d] text-[10px] font-bold text-black shadow-[0_0_12px_rgba(198,255,61,0.6)]">
+        <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#c6ff3d] text-[10px] font-bold text-black">
           {rank}
         </span>
       </span>
@@ -577,49 +647,139 @@ function TopArtistCard({
 }
 
 function Hero({
-  activeGenre,
   onSelectGenre,
 }: {
-  activeGenre?: Genre;
   onSelectGenre: (genre?: Genre) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const featuredIndex = waveCards.findIndex((card) => card.featured);
+  const setCount = waveCards.length;
+  const middleCopy = Math.floor(WAVE_LOOP_COPIES / 2);
+  const startIndex = middleCopy * setCount + Math.max(featuredIndex, 0);
+  const [centeredIndex, setCenteredIndex] = useState(startIndex);
+  const didInitRef = useRef(false);
+  const wrappingRef = useRef(false);
+  const loopedWaveCards = useMemo(
+    () =>
+      Array.from({ length: WAVE_LOOP_COPIES }, (_, copy) =>
+        waveCards.map((card) => ({ card, copy })),
+      ).flat(),
+    [],
+  );
+
+  const scrollToIndex = (index: number, smooth = true) => {
+    const root = scrollerRef.current;
+    const card = root?.querySelectorAll<HTMLElement>("[data-wave-card]")[index];
+    if (!root || !card) return;
+    const left =
+      card.getBoundingClientRect().left -
+      root.getBoundingClientRect().left +
+      root.scrollLeft -
+      (root.clientWidth - card.offsetWidth) / 2;
+    root.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+  };
 
   useEffect(() => {
     const root = scrollerRef.current;
-    const featured = root?.querySelector<HTMLElement>("[data-featured='true']");
-    if (!root || !featured) return;
-    root.scrollLeft =
-      featured.offsetLeft - (root.clientWidth - featured.offsetWidth) / 2;
-  }, []);
+    if (!root) return;
+
+    const cardsOf = () => [
+      ...root.querySelectorAll<HTMLElement>("[data-wave-card]"),
+    ];
+
+    const closestIndex = (cards: HTMLElement[]) => {
+      const midpoint = root.scrollLeft + root.clientWidth / 2;
+      let next = 0;
+      let best = Infinity;
+      cards.forEach((card, index) => {
+        const center = card.offsetLeft + card.offsetWidth / 2;
+        const distance = Math.abs(center - midpoint);
+        if (distance < best) {
+          best = distance;
+          next = index;
+        }
+      });
+      return next;
+    };
+
+    const updateCentered = () => {
+      if (wrappingRef.current) return;
+      const cards = cardsOf();
+      if (cards.length === 0) return;
+      setCenteredIndex(closestIndex(cards));
+    };
+
+    const normalizeLoop = () => {
+      if (wrappingRef.current) return;
+      const cards = cardsOf();
+      if (cards.length < setCount * 2) return;
+      const next = closestIndex(cards);
+      const copy = Math.floor(next / setCount);
+      if (copy !== 0 && copy !== WAVE_LOOP_COPIES - 1) {
+        setCenteredIndex(next);
+        return;
+      }
+
+      const targetIndex = middleCopy * setCount + (next % setCount);
+      const current = cards[next];
+      const target = cards[targetIndex];
+      if (!current || !target) return;
+      const delta = target.offsetLeft - current.offsetLeft;
+      if (Math.abs(delta) < 1) {
+        setCenteredIndex(targetIndex);
+        return;
+      }
+
+      wrappingRef.current = true;
+      root.classList.add("wave-loop-jump");
+      const snap = root.style.scrollSnapType;
+      root.style.scrollSnapType = "none";
+      root.scrollLeft += delta;
+      setCenteredIndex(targetIndex);
+      window.requestAnimationFrame(() => {
+        root.style.scrollSnapType = snap;
+        root.classList.remove("wave-loop-jump");
+        wrappingRef.current = false;
+      });
+    };
+
+    const init = () => {
+      const card = cardsOf()[startIndex];
+      if (!card) return;
+      if (!didInitRef.current || root.scrollLeft < 16) {
+        scrollToIndex(startIndex, false);
+        didInitRef.current = true;
+      }
+      updateCentered();
+    };
+
+    let settleTimer = 0;
+    const onScroll = () => {
+      updateCentered();
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(normalizeLoop, 120);
+    };
+
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(init);
+    });
+    const timeout = window.setTimeout(init, 80);
+    root.addEventListener("scroll", onScroll, { passive: true });
+    root.addEventListener("scrollend", normalizeLoop);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+      window.clearTimeout(settleTimer);
+      root.removeEventListener("scroll", onScroll);
+      root.removeEventListener("scrollend", normalizeLoop);
+    };
+  }, [middleCopy, setCount, startIndex]);
 
   return (
     <header className="relative">
       <div className="relative pt-[max(16px,env(safe-area-inset-top))]">
         <div className="absolute inset-0 overflow-hidden">
           <HeroBackdrop />
-        </div>
-
-        <div className="relative z-10 px-5">
-          <div className="glass flex items-center gap-2 rounded-full px-4 py-3">
-            <Search size={16} strokeWidth={1.8} className="text-white/70" />
-            <span className="flex-1 text-[14px] text-white/45">
-              Поиск треков, артистов и подборок
-            </span>
-            <AudioLines size={16} className="text-[#c6ff3d]" />
-          </div>
-
-          <div className="mt-3 flex gap-2">
-            <span className="shrink-0 rounded-full bg-gradient-to-r from-[#F4FF7A] to-[#9CFF3A] px-3 py-1.5 text-[12px] font-semibold text-black shadow-[0_0_24px_rgba(198,255,61,0.55),0_0_48px_rgba(198,255,61,0.28)]">
-              Выгода
-            </span>
-            <span className="glass-soft shrink-0 rounded-full px-3 py-1.5 text-[12px] text-white/80">
-              Рядом с вами
-            </span>
-            <span className="glass-soft shrink-0 rounded-full px-3 py-1.5 text-[12px] text-white/80">
-              Новое
-            </span>
-          </div>
         </div>
 
         <div className="relative z-10 mt-6 flex flex-col items-center px-6">
@@ -655,17 +815,20 @@ function Hero({
 
         <div
           ref={scrollerRef}
-          className={`relative z-10 mt-4 flex snap-x snap-mandatory items-center gap-4 px-16 py-16 ${hideScrollbar}`}
+          className={`relative z-10 mt-4 flex snap-x snap-mandatory items-center gap-3 px-12 py-10 [overflow-anchor:none] ${hideScrollbar}`}
         >
-          {waveCards.map((card, index) => (
+          {loopedWaveCards.map(({ card, copy }, index) => (
             <WaveFlowCard
-              key={card.id}
+              key={`${copy}-${card.id}`}
               card={card}
-              tilt={index === 0 ? -6 : index === waveCards.length - 1 ? 6 : 0}
-              active={
-                card.featured ? !activeGenre : card.genre === activeGenre
+              tilt={
+                index === centeredIndex ? 0 : index < centeredIndex ? 11 : -11
               }
-              onClick={() => onSelectGenre(card.genre)}
+              active={index === centeredIndex}
+              onClick={() => {
+                onSelectGenre(card.genre);
+                scrollToIndex(index);
+              }}
             />
           ))}
         </div>
@@ -694,10 +857,27 @@ function HeroBackdrop() {
       <div className="absolute inset-0 bg-[#07140c]" />
       <div className="absolute -left-16 top-0 h-56 w-56 rounded-full bg-[#ff3d8a]/28 blur-[70px]" />
       <div className="absolute right-[-40px] top-10 h-64 w-64 rounded-full bg-[#c6ff3d]/22 blur-[80px]" />
-      <div className="absolute inset-x-8 top-40 h-40 rounded-full bg-[#0d8a3a]/35 blur-[60px]" />
+      <div className="absolute inset-x-4 top-36 h-52 rounded-full bg-[#12a34a]/45 blur-[50px]" />
+      <div className="absolute inset-x-0 bottom-10 h-40 bg-[#0d8a3a]/40 blur-[40px]" />
       <div className="noise absolute inset-0 opacity-[0.12]" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#04110a]" />
     </div>
+  );
+}
+
+function WaveMark() {
+  return (
+    <svg
+      viewBox="0 0 48 40"
+      className="h-14 w-14 text-[#c6ff3d]"
+      aria-hidden
+    >
+      <ellipse cx="4.5" cy="20" rx="3.4" ry="8" fill="currentColor" />
+      <ellipse cx="14" cy="20" rx="4" ry="12.5" fill="currentColor" />
+      <ellipse cx="24" cy="20" rx="4.6" ry="17" fill="currentColor" />
+      <ellipse cx="34" cy="20" rx="4" ry="12.5" fill="currentColor" />
+      <ellipse cx="43.5" cy="20" rx="3.4" ry="8" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -712,67 +892,259 @@ function WaveFlowCard({
   onClick: () => void;
   tilt?: number;
 }) {
-  if (card.featured) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`press flex h-40 w-[152px] shrink-0 snap-center flex-col items-center justify-center rounded-[28px] border border-[#d8ff6a]/40 bg-[#c6ff3d]/18 text-white backdrop-blur-2xl ${
-          active ? "glow-lime" : "opacity-90"
-        }`}
-        data-featured="true"
-      >
-        <AudioLines size={40} strokeWidth={2} className="text-[#d8ff6a]" />
-        <span className="mt-3 text-[16px] font-medium">{card.title}</span>
-      </button>
-    );
-  }
+  const twoLine = card.title.includes("\n");
 
   return (
     <button
       type="button"
       onClick={onClick}
-      style={{ transform: `rotate(${tilt}deg)` }}
-      className={`press flex h-40 w-[152px] shrink-0 snap-center flex-col justify-between rounded-[28px] p-4 text-left text-white backdrop-blur-2xl ${
-        active
-          ? "glow-lime bg-white/12"
-          : "border border-white/12 bg-[#04180c]/45"
+      data-wave-card=""
+      data-featured={card.featured ? "true" : undefined}
+      className={`relative flex h-40 w-40 shrink-0 snap-center items-center justify-center ${
+        active ? "z-10" : ""
       }`}
     >
-      <span className="flex -space-x-2">
-        {card.avatars.slice(0, 3).map((src) => (
-          <span
-            key={src}
-            className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-white/20"
-          >
-            <Image src={src} alt="" fill sizes="32px" className="object-cover" />
-          </span>
-        ))}
-      </span>
-      <span>
-        <span className="block text-[14px] font-medium leading-tight">
+      <span
+        style={{
+          transform: active ? "rotate(0deg)" : `rotate(${tilt}deg)`,
+        }}
+        className={`relative flex flex-col items-center justify-center px-3 transition-[width,height,border-radius,transform] duration-300 ease-out ${
+          twoLine ? "gap-1" : "gap-5"
+        } ${
+          active ? "h-40 w-40 rounded-[32px]" : "h-[140px] w-[140px] rounded-[28px]"
+        }`}
+      >
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 ${
+            active
+              ? "rounded-[32px] wave-plaque-active"
+              : "rounded-[28px] wave-plaque"
+          }`}
+        />
+        <span className="relative z-10 flex shrink-0 items-center justify-center">
+          {card.featured ? (
+            <WaveMark />
+          ) : card.media === "avatar" ? (
+            <span className="relative block h-14 w-14 overflow-hidden rounded-full bg-black">
+              {card.image ? (
+                <Image
+                  src={card.image}
+                  alt=""
+                  fill
+                  sizes="56px"
+                  className="object-cover"
+                />
+              ) : null}
+            </span>
+          ) : (
+            <span className="relative block h-14 w-14 overflow-hidden rounded-[14px] bg-black">
+              {card.image ? (
+                <Image
+                  src={card.image}
+                  alt=""
+                  fill
+                  sizes="56px"
+                  className="object-cover"
+                />
+              ) : null}
+            </span>
+          )}
+        </span>
+        <span
+          className={`relative z-10 block whitespace-pre-line text-center font-heading font-bold leading-none tracking-[-0.03em] ${
+            active ? "text-[20px] text-white" : "text-[18px] text-[#c5e0c4]/55"
+          }`}
+        >
           {card.title}
         </span>
-        {card.subtitle ? (
-          <span className="mt-1 block text-[12px] text-white/65">
-            {card.subtitle}
-          </span>
-        ) : null}
       </span>
     </button>
   );
 }
 
+function tasteMatchPercent(id: string) {
+  let hash = 0;
+  for (const char of id) hash += char.charCodeAt(0);
+  return 68 + (hash % 27);
+}
+
+function StackedPlaylistCard({ playlist }: { playlist: Playlist }) {
+  const tracks = getPlaylistTracks(playlist);
+  const left = tracks[1]?.cover ?? tracks[0]?.cover ?? playlist.cover;
+  const center = tracks[0]?.cover ?? playlist.cover;
+  const right = tracks[2]?.cover ?? left;
+
+  return (
+    <button
+      type="button"
+      className="press overflow-hidden rounded-[28px] bg-gradient-to-t from-[#2c2c2e] to-[#04060a] px-2 pb-5 pt-8 text-center"
+    >
+      <span className="relative mx-auto block h-32 w-full">
+        <span className="absolute left-1/2 top-3 z-0 h-[88px] w-[88px] -translate-x-[78%] -rotate-[16deg] overflow-hidden rounded-[16px] bg-black opacity-80">
+          <Image src={left} alt="" fill sizes="88px" className="object-cover" />
+        </span>
+        <span className="absolute left-1/2 top-3 z-0 h-[88px] w-[88px] -translate-x-[22%] rotate-[16deg] overflow-hidden rounded-[16px] bg-black opacity-80">
+          <Image src={right} alt="" fill sizes="88px" className="object-cover" />
+        </span>
+        <span className="absolute left-1/2 top-0 z-10 h-[104px] w-[104px] -translate-x-1/2 overflow-hidden rounded-[18px] bg-black shadow-[0_12px_28px_rgba(0,0,0,0.5)]">
+          <Image src={center} alt="" fill sizes="104px" className="object-cover" />
+        </span>
+        <span className="absolute left-1/2 top-[72px] z-20 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-white text-black">
+          <Play size={18} fill="currentColor" className="ml-0.5" />
+        </span>
+      </span>
+      <span className="mt-4 block truncate px-2 text-[16px] font-medium">
+        {playlist.title}
+      </span>
+      <span className="mt-1 block truncate px-2 text-[12px] text-white/45">
+        {tracksCountLabel(tracks.length)} · {tasteMatchPercent(playlist.id)}% совпадение
+      </span>
+    </button>
+  );
+}
+
+function PlaylistShelfBlock({ shelf }: { shelf: PlaylistShelf }) {
+  const playlist = shelf.playlists[0];
+  const tracks = playlist ? getPlaylistTracks(playlist).slice(0, 4) : [];
+
+  if (shelf.layout === "grid") {
+    return (
+      <section>
+        <SectionHeading title={shelf.title} subtitle={shelf.subtitle} />
+        <div className="grid grid-cols-2 gap-3 px-5">
+          {shelf.playlists.map((item) => (
+            <StackedPlaylistCard key={item.id} playlist={item} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (shelf.layout === "rail") {
+    return (
+      <CarouselSection title={shelf.title} subtitle={shelf.subtitle}>
+        {shelf.playlists.map((item) => (
+          <PlaylistCard key={item.id} playlist={item} />
+        ))}
+      </CarouselSection>
+    );
+  }
+
+  if (shelf.layout === "banner" && playlist) {
+    return (
+      <section>
+        <SectionHeading title={shelf.title} subtitle={shelf.subtitle} />
+        <div className="px-5">
+          <button
+            type="button"
+            className="press relative block aspect-[16/10] w-full overflow-hidden rounded-[28px] bg-black text-left"
+          >
+            <Image
+              src={playlist.cover}
+              alt=""
+              fill
+              sizes="408px"
+              className="object-cover"
+            />
+            <span className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+            <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
+              <span className="min-w-0">
+                <span className="block text-[12px] capitalize text-white/65">
+                  Плейлист · {playlist.mood}
+                </span>
+                <span className="mt-1 block font-heading text-[28px] font-bold leading-none tracking-[-0.03em]">
+                  {playlist.title}
+                </span>
+              </span>
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-black">
+                <Play size={20} fill="currentColor" className="ml-0.5" />
+              </span>
+            </span>
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (shelf.layout === "chart" && playlist) {
+    return (
+      <section>
+        <SectionHeading title={shelf.title} subtitle={shelf.subtitle} />
+        <div className="px-5">
+          <div className="overflow-hidden rounded-[24px] bg-white/6 px-2 py-1">
+            {tracks.map((track, index) => (
+              <TrackRow
+                key={`${track.id}-${index}`}
+                track={track}
+                rank={index + 1}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="press mt-3 w-full rounded-full border border-white/15 py-3 text-[14px] font-medium"
+          >
+            Слушать чарт
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (!playlist) return null;
+
+  return (
+    <section>
+      <SectionHeading title={shelf.title} subtitle={shelf.subtitle} />
+      <div className="px-5">
+        <div className="mb-3 flex items-center gap-3">
+          <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[20px] bg-black">
+            <Image
+              src={playlist.cover}
+              alt=""
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-heading text-[24px] font-bold leading-none tracking-[-0.03em]">
+              {playlist.title}
+            </p>
+            <p className="mt-1.5 truncate text-[12px] capitalize text-white/45">
+              {tracksCountLabel(getPlaylistTracks(playlist).length)} · {playlist.mood}
+            </p>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-[24px] bg-white/6 px-2">
+          {tracks.slice(0, 3).map((track, index) => (
+            <TrackRow key={`${track.id}-${index}`} track={track} />
+          ))}
+        </div>
+        <button
+          type="button"
+          className="press mt-3 w-full rounded-full border border-white/15 py-3 text-[14px] font-medium"
+        >
+          Слушать всё
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function CarouselSection({
   title,
+  subtitle,
   children,
 }: {
   title: string;
+  subtitle?: string;
   children: ReactNode;
 }) {
   return (
     <section>
-      <SectionHeading title={title} />
+      <SectionHeading title={title} subtitle={subtitle} />
       <div className={`flex gap-4 px-5 ${hideScrollbar}`}>{children}</div>
     </section>
   );
@@ -783,13 +1155,15 @@ function SquareCard({
   subtitle,
   cover,
   size = "md",
+  fill = false,
 }: {
   title: string;
   subtitle?: string;
   cover: string;
   size?: "md" | "lg";
+  fill?: boolean;
 }) {
-  const width = size === "lg" ? "w-[152px]" : "w-[120px]";
+  const width = fill ? "w-full" : size === "lg" ? "w-[152px]" : "w-[120px]";
   const radius = size === "lg" ? "rounded-[20px]" : "rounded-[16px]";
 
   return (
@@ -801,7 +1175,7 @@ function SquareCard({
           src={cover}
           alt=""
           fill
-          sizes={size === "lg" ? "152px" : "120px"}
+          sizes={fill ? "50vw" : size === "lg" ? "152px" : "120px"}
           className="object-cover"
         />
       </span>
@@ -873,22 +1247,45 @@ function FeaturedCard({ release }: { release: FeaturedRelease }) {
   );
 }
 
-function TrackRow({ track }: { track: Track }) {
+function TrackRow({ track, rank }: { track: Track; rank?: number }) {
+  const [liked, setLiked] = useState(false);
+
   return (
-    <button
-      type="button"
-      className="press flex w-full items-center gap-3 px-2 py-3 text-left"
-    >
-      <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
+    <div className="flex w-full items-center gap-3 px-2 py-3">
+      {rank != null ? (
+        <span className="w-6 shrink-0 text-center text-[14px] font-semibold text-white/40">
+          {rank}
+        </span>
+      ) : null}
+      <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black">
         <Image src={track.cover} alt="" fill sizes="48px" className="object-cover" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{track.title}</span>
-        <span className="mt-0.5 block truncate text-xs text-white/45">{track.artist}</span>
+        <span className="mt-0.5 block truncate text-xs text-white/45">
+          {track.artist}
+        </span>
       </span>
-      <Heart size={16} className="text-white/55" />
-      <Ellipsis size={16} className="text-white/35" />
-    </button>
+      <button
+        type="button"
+        className="press flex h-10 w-8 shrink-0 items-center justify-center"
+        aria-label="Ещё"
+      >
+        <Ellipsis size={22} className="text-white" />
+      </button>
+      <button
+        type="button"
+        className="press flex h-10 w-10 shrink-0 items-center justify-center"
+        aria-label="Нравится"
+        aria-pressed={liked}
+        onClick={() => setLiked((value) => !value)}
+      >
+        <Heart
+          size={22}
+          className={liked ? "fill-white text-white" : "text-white"}
+        />
+      </button>
+    </div>
   );
 }
 
